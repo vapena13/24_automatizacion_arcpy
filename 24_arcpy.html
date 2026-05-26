@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.550">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>arcpy</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="24_arcpy_files/libs/clipboard/clipboard.min.js"></script>
+<script src="24_arcpy_files/libs/quarto-html/quarto.js"></script>
+<script src="24_arcpy_files/libs/quarto-html/popper.min.js"></script>
+<script src="24_arcpy_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="24_arcpy_files/libs/quarto-html/anchor.min.js"></script>
+<link href="24_arcpy_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="24_arcpy_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="24_arcpy_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="24_arcpy_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="24_arcpy_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<p>title: “Guía práctica: análisis de migración de aves con ArcPy” subtitle: “Documentación del script goose_tool.py, ejecución en ArcGIS Pro y análisis de resultados” author: “Nombre del estudiante” date: today lang: es format: html: toc: true toc-depth: 3 number-sections: true theme: cosmo code-fold: false code-tools: true docx: toc: true number-sections: true pdf: toc: true toc-depth: 3 number-sections: true documentclass: article papersize: a4 geometry: - margin=2.5cm execute: echo: true warning: false message: false freeze: auto editor: visual</p>
+<hr>
+<style>
+body { text-align: justify; }
+.callout-note, .callout-tip, .callout-warning { text-align: left; }
+</style>
+<section id="información-general" class="level1">
+<h1>Información general</h1>
+<section id="nombre-de-la-práctica" class="level2">
+<h2 class="anchored" data-anchor-id="nombre-de-la-práctica">Nombre de la práctica</h2>
+<p><strong>Aprender ArcPy a partir de una aplicación funcional</strong>: evaluación de la influencia del viento en el comportamiento de movimiento de aves migratorias, usando como caso el ganso de frente blanca.</p>
+</section>
+<section id="propósito-de-la-guía" class="level2">
+<h2 class="anchored" data-anchor-id="propósito-de-la-guía">Propósito de la guía</h2>
+<p>Esta guía documenta el desarrollo, ejecución y análisis de una herramienta de geoprocesamiento construida con <code>ArcPy</code> para ArcGIS Pro. El flujo se basa en una aplicación funcional que trabaja con rutas migratorias, puntos GPS, variables de viento, filtros secuenciales, segmentación dinámica, estadística descriptiva, correlación, regresión lineal y generación de reportes cartográficos.</p>
+</section>
+<section id="objetivos" class="level2">
+<h2 class="anchored" data-anchor-id="objetivos">Objetivos</h2>
+<ol type="1">
+<li>Explorar una geodatabase de trabajo mediante funciones básicas de <code>ArcPy</code>.</li>
+<li>Comprender la estructura de una herramienta de geoprocesamiento configurada en un Toolbox de ArcGIS Pro.</li>
+<li>Ejecutar filtros espaciales, temporales y atributivos sobre puntos de migración.</li>
+<li>Generar salidas vectoriales, estadísticas, gráficas y mapas exportados.</li>
+<li>Analizar los resultados obtenidos y documentar evidencias mediante imágenes, tablas y fragmentos de código.</li>
+</ol>
+</section>
+<section id="pregunta-orientadora" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-orientadora">Pregunta orientadora</h2>
+<p>¿Cómo influye la velocidad y dirección del viento en el comportamiento de movimiento de aves migratorias individuales?</p>
+</section>
+</section>
+<section id="contexto-teórico" class="level1">
+<h1>Contexto teórico</h1>
+<section id="variables-del-modelo" class="level2">
+<h2 class="anchored" data-anchor-id="variables-del-modelo">Variables del modelo</h2>
+<p>La herramienta trabaja con variables espaciales, ambientales y cinemáticas asociadas a los puntos GPS y a las rutas migratorias.</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>Campo o fuente</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Identificador del ave</td>
+<td><code>bird_name</code></td>
+<td>Nombre o código del individuo</td>
+</tr>
+<tr class="even">
+<td>Tiempo</td>
+<td><code>timestamp</code></td>
+<td>Fecha y hora del registro</td>
+</tr>
+<tr class="odd">
+<td>Distancia acumulada</td>
+<td><code>distancemts</code></td>
+<td>Medida acumulada sobre la ruta</td>
+</tr>
+<tr class="even">
+<td>Velocidad terrestre del ave</td>
+<td><code>vg_mtss</code></td>
+<td>Velocidad de desplazamiento del ave</td>
+</tr>
+<tr class="odd">
+<td>Componente horizontal del viento</td>
+<td><code>u</code></td>
+<td>Componente oeste-este</td>
+</tr>
+<tr class="even">
+<td>Componente vertical del viento</td>
+<td><code>v</code></td>
+<td>Componente sur-norte</td>
+</tr>
+<tr class="odd">
+<td>Velocidad del viento</td>
+<td><code>vw_mtss</code></td>
+<td>Magnitud del vector de viento</td>
+</tr>
+<tr class="even">
+<td>Soporte del viento</td>
+<td><code>ws_mtss</code></td>
+<td>Componente del viento en la dirección del ave</td>
+</tr>
+<tr class="odd">
+<td>Viento cruzado</td>
+<td><code>wc_mtss</code></td>
+<td>Componente perpendicular a la dirección del ave</td>
+</tr>
+<tr class="even">
+<td>Velocidad en el aire</td>
+<td><code>va_mtss</code></td>
+<td>Velocidad estimada del ave respecto al aire</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="modelo-estadístico" class="level2">
+<h2 class="anchored" data-anchor-id="modelo-estadístico">Modelo estadístico</h2>
+<p>El modelo de referencia evalúa la relación entre la velocidad del ave y los componentes del viento mediante una regresión lineal:</p>
+<p><span class="math display">\[
+V_g = V_a + C_1 W_s + C_2 W_c + C_3(W_s \cdot W_c)
+\]</span></p>
+<p>Donde:</p>
+<ul>
+<li><span class="math inline">\(V_g\)</span> corresponde a la velocidad terrestre del ave.</li>
+<li><span class="math inline">\(V_a\)</span> corresponde a la velocidad del ave respecto al aire.</li>
+<li><span class="math inline">\(W_s\)</span> corresponde al soporte del viento.</li>
+<li><span class="math inline">\(W_c\)</span> corresponde al viento cruzado.</li>
+<li><span class="math inline">\(W_s \cdot W_c\)</span> corresponde al término de interacción entre soporte y viento cruzado.</li>
+</ul>
+</section>
+</section>
+<section id="datos-de-entrada" class="level1">
+<h1>Datos de entrada</h1>
+<section id="geodatabase-de-trabajo" class="level2">
+<h2 class="anchored" data-anchor-id="geodatabase-de-trabajo">Geodatabase de trabajo</h2>
+<p>Ruta de trabajo:</p>
+<pre class="text"><code>C:\PIG\Test.gdb</code></pre>
+<p>Capas principales:</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Recurso</th>
+<th>Ruta esperada</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Rutas migratorias</td>
+<td><code>C:\PIG\Test.gdb\lines_routes_distancemts_3857</code></td>
+<td>Segmentación dinámica y rutas lineales</td>
+</tr>
+<tr class="even">
+<td>Puntos GPS</td>
+<td><code>C:\PIG\Test.gdb\points_3857</code></td>
+<td>Registros individuales de aves y variables ambientales</td>
+</tr>
+<tr class="odd">
+<td>Script principal</td>
+<td><code>C:\PIG\goose_tool.py</code></td>
+<td>Herramienta principal de ArcPy</td>
+</tr>
+<tr class="even">
+<td>Toolbox</td>
+<td><code>Test.tbx</code></td>
+<td>Interfaz de ejecución en ArcGIS Pro</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="evidencia-de-datos-cargados" class="level2">
+<h2 class="anchored" data-anchor-id="evidencia-de-datos-cargados">Evidencia de datos cargados</h2>
+<p>Inserte aquí una captura de la geodatabase, las capas base y el proyecto de ArcGIS Pro.</p>
+<div id="fig-gdb" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gdb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/espacio_trabajo.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gdb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Evidencia de la geodatabase y capas base
+</figcaption>
+</figure>
+</div>
+<p>Análisis de los datos:</p>
+<p>La capa <code>points_3857</code> debe contener los campos <code>timestamp</code>, <code>bird_name</code>, <code>distancemts</code>, <code>vg_mtss</code>, <code>vw_mtss</code>, <code>ws_mtss</code>, <code>wc_mtss</code> y <code>va_mtss</code>. La capa de rutas debe tener el campo <code>distancemts</code> con la medida acumulada.</p>
+<div id="fig-fields-points" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fields-points-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/atributes_points.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fields-points-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Detalle de campos en points_3857
+</figcaption>
+</figure>
+</div>
+<div id="fig-fields-lines" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fields-lines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/atributes_lines.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fields-lines-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Detalle de campos en lines_routes_distancemts_3857
+</figcaption>
+</figure>
+</div>
+<p>Se observan 7 aves distintas, con registros entre marzo y junio de 2007. Las variables de viento y velocidad parecen tener valores válidos para el análisis.</p>
+</section>
+</section>
+<section id="configuración-inicial-del-entorno" class="level1">
+<h1>Configuración inicial del entorno</h1>
+<div id="7af5afe5" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>arcpy.env.overwriteOutput <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Entorno de ArcPy inicializado correctamente."</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Workspace:"</span>, arcpy.env.workspace)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Resultado:<br>
+La geodatabase <code>Test.gdb</code> quedó configurada como workspace activo.</p>
+<pre><code>Entorno de ArcPy inicializado correctamente.
+Workspace: C:\PIG\Test.gdb</code></pre>
+</section>
+<section id="fase-1.-fundamentos-y-exploración-del-workspace" class="level1">
+<h1>Fase 1. Fundamentos y exploración del workspace</h1>
+<section id="pregunta-1.-cómo-listar-y-verificar-la-existencia-de-las-capas-base-en-una-geodatabase" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-1.-cómo-listar-y-verificar-la-existencia-de-las-capas-base-en-una-geodatabase">Pregunta 1. ¿Cómo listar y verificar la existencia de las capas base en una geodatabase?</h2>
+<section id="concepto" class="level3">
+<h3 class="anchored" data-anchor-id="concepto">Concepto</h3>
+<p><code>ArcPy</code> es un paquete de Python que permite interactuar con ArcGIS Pro. Para trabajar con datos espaciales, es fundamental configurar el entorno de trabajo y verificar que las capas necesarias estén disponibles. La función <code>arcpy.ListFeatureClasses()</code> devuelve una lista de las clases de entidad presentes en el workspace, lo que facilita confirmar la existencia de las capas base antes de ejecutar cualquier análisis.</p>
+<p>Modulos, es un conjunto de clases, funciones y herramientas predefinidas que permiten realizar tareas específicas. En este caso, <code>arcpy</code> es el módulo principal para la manipulación de datos geoespaciales en ArcGIS Pro.</p>
+<p>Algunos modulos especializacion de <code>arcpy</code> son: - <code>arcpy.geocoding</code>: este modulo se utiliza para realizar tareas relacionadas con la geocodificación, como convertir direcciones en coordenadas geográficas o viceversa. - <code>arcpy.analysis</code>: proporciona herramientas para realizar análisis espaciales, como superposición, proximidad, interpolación y topología. - <code>arcpy.conversion</code>; se utiliza para convertir datos entre diferentes formatos, como pasar de datasets a feature classes, o de tablas a capas.</p>
+</section>
+<section id="código" class="level3">
+<h3 class="anchored" data-anchor-id="código">Código</h3>
+<div id="8b59b94f" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>puntos <span class="op">=</span> arcpy.ListFeatureClasses(feature_type<span class="op">=</span><span class="st">"Point"</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>lineas <span class="op">=</span> arcpy.ListFeatureClasses(feature_type<span class="op">=</span><span class="st">"Line"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Clases de entidad de puntos:"</span>, puntos)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Clases de entidad de líneas:"</span>, lineas)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia">Evidencia</h3>
+<div id="fig-list-fc" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-list-fc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/listado_featureclasses.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-list-fc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Listado de clases de entidad de punto y línea
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis" class="level3">
+<h3 class="anchored" data-anchor-id="análisis">Análisis</h3>
+<p>Aparecen las capas esperadas: <code>points_3857</code> para puntos y <code>lines_routes_distancemts_3857</code> para líneas. Esto confirma que los datos base están disponibles para el análisis en el espacio de trabajo configurado.</p>
+</section>
+</section>
+<section id="pregunta-2.-cómo-describir-las-propiedades-de-un-feature-class-y-su-sistema-de-referencia" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-2.-cómo-describir-las-propiedades-de-un-feature-class-y-su-sistema-de-referencia">Pregunta 2. ¿Cómo describir las propiedades de un Feature Class y su sistema de referencia?</h2>
+<section id="concepto-1" class="level3">
+<h3 class="anchored" data-anchor-id="concepto-1">Concepto</h3>
+<p>La función <code>arcpy.Describe()</code> permite consultar propiedades del dataset, como tipo de geometría, campo identificador y sistema de coordenadas.</p>
+</section>
+<section id="código-1" class="level3">
+<h3 class="anchored" data-anchor-id="código-1">Código</h3>
+<div id="b612f53c" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>capa_puntos <span class="op">=</span> <span class="st">"points_3857"</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>desc <span class="op">=</span> arcpy.Describe(capa_puntos)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Nombre de la entidad: </span><span class="sc">{</span>desc<span class="sc">.</span>name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Tipo de geometría: </span><span class="sc">{</span>desc<span class="sc">.</span>shapeType<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Campo ID interno: </span><span class="sc">{</span>desc<span class="sc">.</span>OIDFieldName<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Sistema de coordenadas: </span><span class="sc">{</span>desc<span class="sc">.</span>spatialReference<span class="sc">.</span>name<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Unidades lineales: </span><span class="sc">{</span>desc<span class="sc">.</span>spatialReference<span class="sc">.</span>linearUnitName<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-1" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-1">Evidencia</h3>
+<div id="fig-describe" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-describe-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/describe_points.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-describe-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Descripción de la capa points_3857
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis-1" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-1">Análisis</h3>
+<p>El sistema de referencia es importante para medir distancias y ángulos locales. En este caso, la capa <code>points_3857</code> está en Web Mercator, un sistema proyectado común para datos web pero que puede introducir distorsiones en áreas grandes. Para análisis más precisos, sería ideal usar un sistema de referencia local adecuado a la zona de estudio.</p>
+</section>
+</section>
+<section id="pregunta-3.-cómo-verificar-y-crear-un-feature-dataset-para-organizar-datos-por-escenario" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-3.-cómo-verificar-y-crear-un-feature-dataset-para-organizar-datos-por-escenario">Pregunta 3. ¿Cómo verificar y crear un Feature Dataset para organizar datos por escenario?</h2>
+<section id="concepto-2" class="level3">
+<h3 class="anchored" data-anchor-id="concepto-2">Concepto</h3>
+<p>Un Feature Dataset permite agrupar salidas vectoriales bajo un mismo sistema de referencia. En esta guía se usa para guardar resultados por escenario, por ejemplo <code>spring</code>, <code>autumn</code> o un escenario personalizado.</p>
+</section>
+<section id="código-2" class="level3">
+<h3 class="anchored" data-anchor-id="código-2">Código</h3>
+<div id="c5258641" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>gdb_path <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>dataset_name <span class="op">=</span> <span class="st">"autumn"</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>referencia_capa <span class="op">=</span> os.path.join(gdb_path, <span class="st">"points_3857"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>dataset_completo <span class="op">=</span> os.path.join(gdb_path, dataset_name)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> arcpy.Exists(dataset_completo):</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"El Feature Dataset '</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">' ya existe."</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>:</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    spatial_ref <span class="op">=</span> arcpy.Describe(referencia_capa).spatialReference</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    arcpy.management.CreateFeatureDataset(</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        out_dataset_path<span class="op">=</span>gdb_path,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        out_name<span class="op">=</span>dataset_name,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        spatial_reference<span class="op">=</span>spatial_ref</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Feature Dataset '</span><span class="sc">{</span>dataset_name<span class="sc">}</span><span class="ss">' creado correctamente."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-2" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-2">Evidencia</h3>
+<div id="fig-fdataset" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-fdataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/dataset_autumn.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fdataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Creación o verificación del Feature Dataset
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis-2" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-2">Análisis</h3>
+<p>Para este caso el dataset fue creado, no existia. En este caso es util separar las salidas por escenario para mantener una organización clara de los resultados, facilitar la gestión de datos y evitar confusiones entre diferentes conjuntos de resultados. Al tener un Feature Dataset específico para cada escenario, se pueden almacenar todas las capas relacionadas con ese escenario en un solo lugar, lo que mejora la eficiencia al acceder a los datos y permite una mejor estructuración del proyecto. Además, esto facilita la representación visual y la exportación de resultados específicos para cada escenario sin afectar otros conjuntos de datos.</p>
+</section>
+</section>
+<section id="pregunta-4.-cómo-listar-los-campos-de-una-tabla-y-conocer-sus-tipos-de-datos" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-4.-cómo-listar-los-campos-de-una-tabla-y-conocer-sus-tipos-de-datos">Pregunta 4. ¿Cómo listar los campos de una tabla y conocer sus tipos de datos?</h2>
+<section id="concepto-3" class="level3">
+<h3 class="anchored" data-anchor-id="concepto-3">Concepto</h3>
+<p><code>arcpy.ListFields()</code> permite inspeccionar la estructura de atributos. Esta revisión evita errores posteriores en consultas SQL, filtros y cálculos.</p>
+</section>
+<section id="código-3" class="level3">
+<h3 class="anchored" data-anchor-id="código-3">Código</h3>
+<div id="45645ccd" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>campos <span class="op">=</span> arcpy.ListFields(<span class="st">"points_3857"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Estructura de campos:"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> campo <span class="kw">in</span> campos:</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Campo: </span><span class="sc">{</span>campo<span class="sc">.</span>name<span class="sc">}</span><span class="ss"> | Tipo: </span><span class="sc">{</span>campo<span class="sc">.</span><span class="bu">type</span><span class="sc">}</span><span class="ss"> | Longitud: </span><span class="sc">{</span>campo<span class="sc">.</span>length<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-3" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-3">Evidencia</h3>
+<pre class="text"><code>Estructura de campos:
+Campo: OBJECTID | Tipo: OID | Longitud: 4
+Campo: Shape | Tipo: Geometry | Longitud: 0
+Campo: timestamp | Tipo: String | Longitud: 254
+Campo: long | Tipo: Double | Longitud: 8
+Campo: lat | Tipo: Double | Longitud: 8
+Campo: sensor_typ | Tipo: String | Longitud: 254
+Campo: individual | Tipo: String | Longitud: 254
+Campo: tag_ident | Tipo: String | Longitud: 254
+Campo: ind_ident | Tipo: String | Longitud: 254
+Campo: study_name | Tipo: String | Longitud: 254
+Campo: utm_east | Tipo: Double | Longitud: 8
+Campo: utm_north | Tipo: Double | Longitud: 8
+Campo: utm_zone | Tipo: String | Longitud: 254
+Campo: distancemts | Tipo: Double | Longitud: 8
+Campo: distancemts_wm | Tipo: Double | Longitud: 8
+Campo: timestamp_string | Tipo: String | Longitud: 40
+Campo: bird_name | Tipo: String | Longitud: 15
+Campo: vel_wind_sn_v_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_mtss | Tipo: Double | Longitud: 8
+Campo: cuad_vel_wind | Tipo: SmallInteger | Longitud: 2
+Campo: alpha_wind_e | Tipo: Double | Longitud: 8
+Campo: alphavw_dir_wind_e | Tipo: Double | Longitud: 8
+Campo: vw_mtss | Tipo: Double | Longitud: 8
+Campo: date | Tipo: String | Longitud: 15
+Campo: time | Tipo: String | Longitud: 15
+Campo: datetime | Tipo: String | Longitud: 30
+Campo: deltatime_seg | Tipo: Double | Longitud: 8
+Campo: month | Tipo: String | Longitud: 2
+Campo: month_day | Tipo: String | Longitud: 6
+Campo: season | Tipo: String | Longitud: 15
+Campo: hour | Tipo: String | Longitud: 2
+Campo: vel_we_bird_mtss_wm | Tipo: Double | Longitud: 8
+Campo: vel_sn_bird_mtss_wm | Tipo: Double | Longitud: 8
+Campo: vg_mtss_wm | Tipo: Double | Longitud: 8
+Campo: vg_mtss_gcd | Tipo: Double | Longitud: 8
+Campo: vg_kmh_wm | Tipo: Double | Longitud: 8
+Campo: vg_kmh_gcd | Tipo: Double | Longitud: 8
+Campo: dist_segment_bird_mts_wm | Tipo: Double | Longitud: 8
+Campo: dist_segment_bird_mts_gcd | Tipo: Double | Longitud: 8
+Campo: dist_acum_bird_mts_wm | Tipo: Double | Longitud: 8
+Campo: dist_acum_bird_mts_gcd | Tipo: Double | Longitud: 8
+Campo: dist_we_bird_mts_wm | Tipo: Double | Longitud: 8
+Campo: dist_sn_bird_mts_wm | Tipo: Double | Longitud: 8
+Campo: cuad_dir_bird | Tipo: SmallInteger | Longitud: 2
+Campo: alpha_dir_bird_e | Tipo: Double | Longitud: 8
+Campo: alphavg_dir_bird_e | Tipo: Double | Longitud: 8
+Campo: alpha_vg_vw | Tipo: Double | Longitud: 8
+Campo: ws_mtss | Tipo: Double | Longitud: 8
+Campo: wc_mtss | Tipo: Double | Longitud: 8
+Campo: va_mtss | Tipo: Double | Longitud: 8
+Campo: coordx_mts | Tipo: Double | Longitud: 8
+Campo: coordy_mts | Tipo: Double | Longitud: 8
+Campo: ifdih_veg_cover | Tipo: Double | Longitud: 8
+Campo: lvytp_ntree_veg | Tipo: SmallInteger | Longitud: 2
+Campo: ifdpl_rel_hum_1000 | Tipo: Single | Longitud: 4
+Campo: lvytp_tree_cover | Tipo: SmallInteger | Longitud: 2
+Campo: elevation_mts | Tipo: SmallInteger | Longitud: 2
+Campo: ifdp_spec_hum_1000 | Tipo: Single | Longitud: 4
+Campo: ifdp_temperature_1000 | Tipo: Single | Longitud: 4
+Campo: lvit_ndvi | Tipo: Single | Longitud: 4
+Campo: lvytp_unvegetaded | Tipo: SmallInteger | Longitud: 2
+Campo: ifdi_low_veg_cover | Tipo: Single | Longitud: 4
+Campo: ifd_soil_water_content | Tipo: Single | Longitud: 4
+Campo: vel_wind_sn_v_1000_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_1000_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_850_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_850_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_600_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_600_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_500_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_500_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_400_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_400_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_200_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_200_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_sn_v_125_mtss | Tipo: Double | Longitud: 8
+Campo: vel_wind_we_u_125_mtss | Tipo: Double | Longitud: 8
+Campo: FID | Tipo: SmallInteger | Longitud: 2
+Campo: wswc_mtss | Tipo: Double | Longitud: 8</code></pre>
+</section>
+<section id="análisis-3" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-3">Análisis</h3>
+<p>Identifique los campos necesarios para la herramienta: <code>timestamp</code>, <code>bird_name</code>, <code>distancemts</code>, <code>vg_mtss</code>, <code>vw_mtss</code>, <code>ws_mtss</code>, <code>wc_mtss</code> y <code>va_mtss</code>. Indique si todos existen.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Campo</th>
+<th>Tipo</th>
+<th>Existe</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>timestamp</code></td>
+<td>String</td>
+<td>Sí</td>
+</tr>
+<tr class="even">
+<td><code>bird_name</code></td>
+<td>String</td>
+<td>Sí</td>
+</tr>
+<tr class="odd">
+<td><code>distancemts</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+<tr class="even">
+<td><code>vg_mtss</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+<tr class="odd">
+<td><code>vw_mtss</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+<tr class="even">
+<td><code>ws_mtss</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+<tr class="odd">
+<td><code>wc_mtss</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+<tr class="even">
+<td><code>va_mtss</code></td>
+<td>Double</td>
+<td>Sí</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="pregunta-5.-cómo-realizar-un-conteo-rápido-de-registros" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-5.-cómo-realizar-un-conteo-rápido-de-registros">Pregunta 5. ¿Cómo realizar un conteo rápido de registros?</h2>
+<section id="concepto-4" class="level3">
+<h3 class="anchored" data-anchor-id="concepto-4">Concepto</h3>
+<p><code>arcpy.management.GetCount()</code> devuelve el número de registros de una tabla o capa. Es útil para verificar si una consulta dejó datos suficientes para el análisis.</p>
+</section>
+<section id="código-4" class="level3">
+<h3 class="anchored" data-anchor-id="código-4">Código</h3>
+<div id="dd6c6fec" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>resultado_conteo <span class="op">=</span> arcpy.management.GetCount(<span class="st">"points_3857"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="bu">int</span>(resultado_conteo[<span class="dv">0</span>])</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total de registros en points_3857: </span><span class="sc">{</span>total<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-4" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-4">Evidencia</h3>
+<div id="fig-count" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-count-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/total_points.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-count-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Total de registros
+</figcaption>
+</figure>
+</div>
+<pre class="text"><code>Total de registros en points_3857: 7363</code></pre>
+</section>
+<section id="análisis-4" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-4">Análisis</h3>
+<p>El número de puntos disponibles es de 7363, lo cual es un volumen adecuado para aplicar filtros, generar gráficas y realizar regresiones. Con esta cantidad de registros, es posible segmentar los datos por ave, por intervalos temporales y por atributos sin perder representatividad en los resultados. Además, el número de puntos permite obtener estadísticas significativas y visualizar patrones en las gráficas sin que el análisis se vea afectado por un tamaño de muestra insuficiente.</p>
+</section>
+</section>
+</section>
+<section id="fase-2.-creación-de-capas-temporales-y-consultas" class="level1">
+<h1>Fase 2. Creación de capas temporales y consultas</h1>
+<section id="pregunta-6.-cómo-crear-una-capa-temporal-a-partir-de-un-feature-class" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-6.-cómo-crear-una-capa-temporal-a-partir-de-un-feature-class">Pregunta 6. ¿Cómo crear una capa temporal a partir de un Feature Class?</h2>
+<section id="código-5" class="level3">
+<h3 class="anchored" data-anchor-id="código-5">Código</h3>
+<div id="97cf4092" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>arcpy.management.MakeFeatureLayer(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    in_features<span class="op">=</span><span class="st">"points_3857"</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    out_layer<span class="op">=</span><span class="st">"lyr_puntos"</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Capa temporal creada: lyr_puntos"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-5" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-5">Evidencia</h3>
+<div id="fig-feature-layer" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-feature-layer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/capa_temporal.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-feature-layer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Capa temporal en ArcGIS Pro
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis-5" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-5">Análisis</h3>
+<p>Una capa temporal permite aplicar filtros y selecciones sin modificar la capa original. En este caso, <code>lyr_puntos</code> se usará para aplicar consultas por ave, por tiempo o por atributos, lo que facilita la gestión de los resultados y evita errores al trabajar directamente sobre la capa base. Además, las capas temporales son útiles para realizar análisis iterativos, ya que se pueden crear, modificar y eliminar sin afectar los datos originales.</p>
+</section>
+</section>
+<section id="pregunta-7.-cómo-seleccionar-registros-por-ave" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-7.-cómo-seleccionar-registros-por-ave">Pregunta 7. ¿Cómo seleccionar registros por ave?</h2>
+<section id="código-6" class="level3">
+<h3 class="anchored" data-anchor-id="código-6">Código</h3>
+<div id="efe4e13d" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>arcpy.management.MakeFeatureLayer(<span class="st">"points_3857"</span>, <span class="st">"lyr_puntos"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>consulta <span class="op">=</span> <span class="st">"bird_name IN ('Folkert', 'Kees', 'Ale')"</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>arcpy.management.SelectLayerByAttribute(</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    in_layer_or_view<span class="op">=</span><span class="st">"lyr_puntos"</span>,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span><span class="st">"NEW_SELECTION"</span>,</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    where_clause<span class="op">=</span>consulta</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>conteo <span class="op">=</span> <span class="bu">int</span>(arcpy.management.GetCount(<span class="st">"lyr_puntos"</span>)[<span class="dv">0</span>])</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Registros seleccionados:"</span>, conteo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-6" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-6">Evidencia</h3>
+<div id="fig-filter-birds" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-filter-birds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/select_by_atributes.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-filter-birds-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: Selección por ave
+</figcaption>
+</figure>
+</div>
+<pre class="text"><code>Registros seleccionados: 3921</code></pre>
+</section>
+<section id="análisis-6" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-6">Análisis</h3>
+<p>Por medio de una consulta SQL, se seleccionaron los registros correspondientes a las aves <code>Folkert</code>, <code>Kees</code> y <code>Ale</code>. El número de registros seleccionados es de 3921, lo que indica que estas aves tienen una cantidad significativa de puntos GPS para el análisis. Esta selección permite enfocar el estudio en individuos específicos y comparar su comportamiento frente a las variables de viento, lo que es fundamental para responder a la pregunta orientadora sobre la influencia del viento en el movimiento de las aves migratorias.</p>
+</section>
+</section>
+<section id="pregunta-8.-cómo-filtrar-por-intervalo-temporal" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-8.-cómo-filtrar-por-intervalo-temporal">Pregunta 8. ¿Cómo filtrar por intervalo temporal?</h2>
+<section id="código-7" class="level3">
+<h3 class="anchored" data-anchor-id="código-7">Código</h3>
+<div id="3e299bb0" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>arcpy.management.MakeFeatureLayer(<span class="st">"points_3857"</span>, <span class="st">"lyr_tiempo"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>consulta <span class="op">=</span> (</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"timestamp &gt;= timestamp '2007-03-01 00:00:00' "</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"AND timestamp &lt;= timestamp '2007-06-01 00:00:00'"</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>arcpy.management.SelectLayerByAttribute(</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    in_layer_or_view<span class="op">=</span><span class="st">"lyr_tiempo"</span>,</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    selection_type<span class="op">=</span><span class="st">"NEW_SELECTION"</span>,</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    where_clause<span class="op">=</span>consulta</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>conteo <span class="op">=</span> <span class="bu">int</span>(arcpy.management.GetCount(<span class="st">"lyr_tiempo"</span>)[<span class="dv">0</span>])</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Registros dentro del intervalo temporal:"</span>, conteo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-7" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-7">Evidencia</h3>
+<div id="fig-filter-time" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-filter-time-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/filtrado_temporal.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-filter-time-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: Filtro temporal
+</figcaption>
+</figure>
+</div>
+<pre class="text"><code>Consulta usada:
+"timestamp" &gt;= '2007-03-01 00:00:00' AND "timestamp" &lt;= '2007-06-01 00:00:00'
+Registros dentro del intervalo temporal: 1816</code></pre>
+</section>
+<section id="análisis-7" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-7">Análisis</h3>
+<p>El filtro temporal si parece corresponde con el filtro de primavera. El filtro se construyo de manera algo atipica debido a que los datos de fecha no estan guarfdados como <code>date</code> sino como <code>string</code>, lo que obliga a usar la función <code>timestamp</code> en la consulta SQL para comparar las fechas. A pesar de esta limitación, el filtro logró seleccionar 1816 registros dentro del intervalo temporal especificado, lo que es adecuado para realizar análisis específicos de la temporada de primavera y evaluar cómo las variables de viento afectan el comportamiento de las aves durante este período crítico de migración.</p>
+</section>
+</section>
+<section id="pregunta-9.-cómo-filtrar-por-atributos-no-nulos" class="level2">
+<h2 class="anchored" data-anchor-id="pregunta-9.-cómo-filtrar-por-atributos-no-nulos">Pregunta 9. ¿Cómo filtrar por atributos no nulos?</h2>
+<section id="código-8" class="level3">
+<h3 class="anchored" data-anchor-id="código-8">Código</h3>
+<div id="a8f769f4" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Solución a la Pregunta 9</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arcpy</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Configurar el espacio de trabajo real</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>arcpy.env.workspace <span class="op">=</span> <span class="vs">r"C:\PIG\Test.gdb"</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. Crear la capa temporal en memoria</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> arcpy.Exists(<span class="st">"lyr_filtro_ambiental"</span>):</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    arcpy.management.Delete(<span class="st">"lyr_filtro_ambiental"</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>arcpy.management.MakeFeatureLayer(<span class="st">"points_3857"</span>, <span class="st">"lyr_filtro_ambiental"</span>)</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. Sentencia compuesta utilizando los nombres de campo reales verificados</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>sql_compuesta <span class="op">=</span> <span class="st">"vw_mtss IS NOT NULL AND vg_mtss_gcd &gt; 4"</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a><span class="cf">try</span>:</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Ejecutar la selección atributiva sobre la capa temporal</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    arcpy.management.SelectLayerByAttribute(<span class="st">"lyr_filtro_ambiental"</span>, <span class="st">"NEW_SELECTION"</span>, sql_compuesta)</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 4. Obtener el conteo de registros que cumplen la condición</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a>    resultado_conteo <span class="op">=</span> arcpy.management.GetCount(<span class="st">"lyr_filtro_ambiental"</span>)</span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a>    total_puntos <span class="op">=</span> <span class="bu">int</span>(resultado_conteo.getOutput(<span class="dv">0</span>))</span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Éxito: Consulta SQL ejecutada correctamente."</span>)</span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Puntos que cumplen con el criterio de vuelo activo con datos de viento: </span><span class="sc">{</span>total_puntos<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> arcpy.ExecuteError:</span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Error de geoprocesamiento de ArcGIS:"</span>)</span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(arcpy.GetMessages(<span class="dv">2</span>))</span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Error general del script: </span><span class="sc">{</span><span class="bu">str</span>(e)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="evidencia-8" class="level3">
+<h3 class="anchored" data-anchor-id="evidencia-8">Evidencia</h3>
+<div id="fig-filter-attributes" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-filter-attributes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/filtrado_ambiental.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-filter-attributes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11: Filtro por atributos
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis-8" class="level3">
+<h3 class="anchored" data-anchor-id="análisis-8">Análisis</h3>
+<p>Los registros nulos puedes causar ruido en las gráficas y afectar la validez de las regresiones. Al filtrar por <code>vw_mtss IS NOT NULL</code> y <code>vg_mtss_gcd &gt; 4</code>, se seleccionaron puntos que representan vuelos activos con datos de viento disponibles, lo que es crucial para evaluar la influencia del viento en el comportamiento de las aves migratorias. El número de registros que cumplen con este criterio es de 1500, lo que proporciona una muestra sólida para los análisis posteriores.</p>
+</section>
+</section>
+</section>
+<section id="fase-4.-ejecución-de-la-herramienta-goose-analysis" class="level1">
+<h1>Fase 4. Ejecución de la herramienta Goose Analysis</h1>
+<section id="estructura-general-del-script-goose_tool.py" class="level2">
+<h2 class="anchored" data-anchor-id="estructura-general-del-script-goose_tool.py">Estructura general del script goose_tool.py</h2>
+<p>El script se organiza en los siguientes bloques funcionales:</p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Bloque</th>
+<th>Función</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Librerías</td>
+<td>Importa <code>arcpy</code>, <code>os</code>, <code>datetime</code>, <code>numpy</code>, <code>matplotlib</code> y módulos externos</td>
+</tr>
+<tr class="even">
+<td>Lectura de parámetros</td>
+<td>Usa <code>arcpy.GetParameterAsText()</code> para capturar los valores configurados en el Toolbox</td>
+</tr>
+<tr class="odd">
+<td>Configuración del entorno</td>
+<td>Define <code>arcpy.env.workspace</code> y permite sobrescritura de salidas</td>
+</tr>
+<tr class="even">
+<td>Creación del Feature Dataset</td>
+<td>Crea un contenedor con el nombre del escenario</td>
+</tr>
+<tr class="odd">
+<td>Filtro 0</td>
+<td>Selecciona aves según <code>bird_name</code></td>
+</tr>
+<tr class="even">
+<td>Filtro 1</td>
+<td>Aplica restricción por tiempo o distancia</td>
+</tr>
+<tr class="odd">
+<td>Filtro 2</td>
+<td>Aplica consultas atributivas sobre variables como <code>ws_mtss</code> y <code>vg_mtss</code></td>
+</tr>
+<tr class="even">
+<td>Segmentación dinámica</td>
+<td>Crea tablas de eventos y capas mediante <code>MakeRouteEventLayer_lr</code></td>
+</tr>
+<tr class="odd">
+<td>Gráficas</td>
+<td>Genera dispersión, histogramas, barras y boxplot</td>
+</tr>
+<tr class="even">
+<td>Estadística</td>
+<td>Ejecuta regresión, correlación y estadísticas descriptivas</td>
+</tr>
+<tr class="odd">
+<td>Automatización cartográfica</td>
+<td>Modifica el mapa activo, aplica simbología y exporta un PNG</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="parámetros-principales-de-la-herramienta" class="level2">
+<h2 class="anchored" data-anchor-id="parámetros-principales-de-la-herramienta">Parámetros principales de la herramienta</h2>
+<p>Complete la siguiente tabla con los valores usados en su ejecución.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">ID</th>
+<th>Parámetro</th>
+<th>Valor usado</th>
+<th>Observación</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td><code>scenario</code></td>
+<td><code>spring</code></td>
+<td>Nombre del escenario</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td><code>folder</code></td>
+<td><code>C:\PIG</code></td>
+<td>Carpeta base</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td><code>workspace</code></td>
+<td><code>C:\PIG\Test.gdb</code></td>
+<td>Geodatabase de trabajo</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td><code>routes</code></td>
+<td><code>lines_routes_distancemts_3857</code></td>
+<td>Rutas</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td><code>points</code></td>
+<td><code>points_3857</code></td>
+<td>Puntos</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td><code>field</code></td>
+<td><code>bird_name</code></td>
+<td>Campo identificador</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td><code>birds</code></td>
+<td><code>[ ... ]</code></td>
+<td>Lista de aves</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td><code>query0type</code></td>
+<td><code>Time</code></td>
+<td>Tipo de filtro</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td><code>queryrange</code></td>
+<td><code>[ ... ]</code></td>
+<td>Rango temporal o distancia</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td><code>field1</code></td>
+<td><code>ws_mtss</code></td>
+<td>Atributo 1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td><code>whereclause1</code></td>
+<td><code>is not null</code></td>
+<td>Condición 1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td><code>field2</code></td>
+<td><code>vg_mtss</code></td>
+<td>Atributo 2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td><code>whereclause2</code></td>
+<td><code>is not null</code></td>
+<td>Condición 2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td><code>dependentvariable</code></td>
+<td><code>vg_mtss</code></td>
+<td>Variable dependiente</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td><code>independentvariables</code></td>
+<td><code>[[...]]</code></td>
+<td>Variables independientes</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">28</td>
+<td><code>fieldlistcorrelation</code></td>
+<td><code>[ ... ]</code></td>
+<td>Variables para correlación</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="evidencia-de-la-interfaz" class="level2">
+<h2 class="anchored" data-anchor-id="evidencia-de-la-interfaz">Evidencia de la interfaz</h2>
+<div id="fig-ui" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ui-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/interfaz_goose.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ui-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;12: Interfaz de Goose Analysis en ArcGIS Pro
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="análisis-de-la-configuración" class="level2">
+<h2 class="anchored" data-anchor-id="análisis-de-la-configuración">Análisis de la configuración</h2>
+<p>El script principal actúa como controlador. No concentra todos los cálculos en un solo archivo, sino que llama módulos especializados. Esto facilita separar la lógica de filtrado, estadística y graficación, aunque también implica que la herramienta solo funcionará si todos los archivos auxiliares están en la misma ruta o en una ruta accesible para Python.</p>
+</section>
+<section id="parámetros-del-toolbox" class="level2">
+<h2 class="anchored" data-anchor-id="parámetros-del-toolbox">Parámetros del Toolbox</h2>
+<p>El script usa 33 parámetros, indexados de 0 a 32. El orden de los parámetros en ArcGIS Pro debe coincidir exactamente con los índices usados en <code>arcpy.GetParameterAsText()</code>.</p>
+<table class="table">
+<colgroup>
+<col style="width: 30%">
+<col style="width: 23%">
+<col style="width: 23%">
+<col style="width: 23%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">ID</th>
+<th>Nombre en el script</th>
+<th>Categoría</th>
+<th>Valor por defecto</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">0</td>
+<td><code>scenario</code></td>
+<td>General</td>
+<td><code>unal</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td><code>folder</code></td>
+<td>Entrada</td>
+<td><code>C:\PIG</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td><code>workspace</code></td>
+<td>Entrada</td>
+<td><code>C:\PIG\Test.gdb</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
+<td><code>routes</code></td>
+<td>Entrada</td>
+<td><code>lines_routes_distancemts_3857</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td><code>points</code></td>
+<td>Entrada</td>
+<td><code>points_3857</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td><code>field</code></td>
+<td>Filtro 0</td>
+<td><code>bird_name</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td><code>birds</code></td>
+<td>Filtro 0</td>
+<td><code>['Folkert','Kees','Ale']</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td><code>query0type</code></td>
+<td>Filtro 1</td>
+<td><code>Time</code>, <code>Distance</code> o <code>None</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td><code>queryrange</code></td>
+<td>Filtro 1</td>
+<td><code>['2007-03-01 00:00:00','2007-06-01 00:00:00']</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td><code>field1</code></td>
+<td>Filtro 2</td>
+<td><code>ws_mtss</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">10</td>
+<td><code>whereclause1</code></td>
+<td>Filtro 2</td>
+<td><code>is not null</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">11</td>
+<td><code>field2</code></td>
+<td>Filtro 2</td>
+<td><code>vg_mtss</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">12</td>
+<td><code>whereclause2</code></td>
+<td>Filtro 2</td>
+<td><code>is not null</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13</td>
+<td><code>segmenttrack</code></td>
+<td>Segmentación</td>
+<td><code>false</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">14</td>
+<td><code>fieldlistscatterhist</code></td>
+<td>Gráfico</td>
+<td><code>['vg_mtss','ws_mtss']</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">15</td>
+<td><code>horizontallabel</code></td>
+<td>Gráfico</td>
+<td><code>Bird Ground Velocity - Vg [Mts/Sec]</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">16</td>
+<td><code>verticallabel</code></td>
+<td>Gráfico</td>
+<td><code>Wind Support - Ws [Mts/Sec]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">17</td>
+<td><code>mainlabel</code></td>
+<td>Gráfico</td>
+<td><code>Ws vs Vg</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">18</td>
+<td><code>integeruniqueid</code></td>
+<td>Regresión</td>
+<td><code>FID</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">19</td>
+<td><code>dependentvariable</code></td>
+<td>Regresión</td>
+<td><code>vg_mtss</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">20</td>
+<td><code>independentvariables</code></td>
+<td>Regresión</td>
+<td><code>[['vw_mtss'],['ws_mtss'],['wc_mtss']]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">21</td>
+<td><code>fieldsforcursor</code></td>
+<td>Gráficos por temporada</td>
+<td><code>['season','MEAN_vg_mtss','bird_name']</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">22</td>
+<td><code>horizontallabel1</code></td>
+<td>Gráficos por temporada</td>
+<td><code>Birds - Seasons</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">23</td>
+<td><code>verticallabel1</code></td>
+<td>Gráficos por temporada</td>
+<td><code>Bird Ground Speed - Vg - [Mts/Sec]</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">24</td>
+<td><code>mainlabel1</code></td>
+<td>Gráficos por temporada</td>
+<td><code>Average Vg by Bird by Season</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">25</td>
+<td><code>fieldsforcursor2</code></td>
+<td>Boxplot</td>
+<td><code>['season','MEAN_vg_mtss','bird_name']</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">26</td>
+<td><code>verticallabel2</code></td>
+<td>Boxplot</td>
+<td><code>Bird Ground Speed - Vg - [Mts/Sec]</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">27</td>
+<td><code>mainlabel2</code></td>
+<td>Boxplot</td>
+<td><code>Average and St. Dev of Vg by Season</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">28</td>
+<td><code>fieldlistcorrelation</code></td>
+<td>Correlación</td>
+<td><code>['vw_mtss','ws_mtss','wc_mtss','vg_mtss','va_mtss']</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">29</td>
+<td><code>summarystatistics</code></td>
+<td>Estadística descriptiva</td>
+<td><code>vw_mtss MEAN; vg_mtss MEAN; va_mtss MEAN</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">30</td>
+<td><code>fieldlistseasonsum2</code></td>
+<td>Resumen por temporada</td>
+<td><code>['season','bird_name']</code></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">31</td>
+<td><code>summarystatistics2</code></td>
+<td>Resumen por temporada</td>
+<td><code>[['vw_mtss','MEAN'],['vg_mtss','STD']]</code></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">32</td>
+<td><code>infields</code></td>
+<td>Filtro 0</td>
+<td><code>['timestamp','distancemts','OBJECTID']</code></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="fase-5.-salidas-generadas" class="level1">
+<h1>Fase 5. Salidas generadas</h1>
+<section id="archivos-generados-en-la-carpeta-del-escenario" class="level2">
+<h2 class="anchored" data-anchor-id="archivos-generados-en-la-carpeta-del-escenario">Archivos generados en la carpeta del escenario</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Archivo</th>
+<th>Existe</th>
+<th>Descripción</th>
+<th>Observación</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>unal_reg_result.pdf</code></td>
+<td>Sí</td>
+<td>Reporte de regresión</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_correlation.txt</code></td>
+<td>Sí</td>
+<td>Matriz de correlación</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_summary_stat.csv</code></td>
+<td>Sí</td>
+<td>Estadísticas descriptivas</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_barchartbirdseason.png</code></td>
+<td>Sí</td>
+<td>Gráfico por ave y temporada</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_barchartseasonbird.png</code></td>
+<td>Sí</td>
+<td>Gráfico por temporada y ave</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_boxplotseason.png</code></td>
+<td>Sí</td>
+<td>Diagrama de caja</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_scatterplot_histo.png</code></td>
+<td>Sí</td>
+<td>Dispersión e histograma</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_map.png</code></td>
+<td>Sí</td>
+<td>Mapa final exportado</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="evidencia-de-la-carpeta-de-salida" class="level2">
+<h2 class="anchored" data-anchor-id="evidencia-de-la-carpeta-de-salida">Evidencia de la carpeta de salida</h2>
+<div id="fig-folder-output" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-folder-output-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/carpeta_salida.jpg" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-folder-output-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;13: Carpeta de resultados del escenario
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="objetos-generados-en-la-geodatabase" class="level2">
+<h2 class="anchored" data-anchor-id="objetos-generados-en-la-geodatabase">Objetos generados en la geodatabase</h2>
+<table class="table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Objeto</th>
+<th>Tipo</th>
+<th>Descripción</th>
+<th>Observación</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>unal_time_lineevents_table_filter1</code></td>
+<td>Tabla</td>
+<td>Eventos por tiempo</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_attributes_lineevents_table_filter2</code></td>
+<td>Tabla</td>
+<td>Eventos lineales por atributos</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_attributes_pointevents_table_filter2</code></td>
+<td>Tabla</td>
+<td>Eventos puntuales por atributos</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_season_sum_stat</code></td>
+<td>Tabla</td>
+<td>Resumen por temporada</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_reg_coeff</code></td>
+<td>Tabla</td>
+<td>Coeficientes de regresión</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><code>unal_reg_diag_op</code></td>
+<td>Tabla</td>
+<td>Diagnósticos del modelo</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><code>unal_regression</code></td>
+<td>Feature Class</td>
+<td>Resultado espacial de regresión</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="fase-6.-análisis-estadístico" class="level1">
+<h1>Fase 6. Análisis estadístico</h1>
+<section id="gráfico-de-dispersión-e-histograma" class="level2">
+<h2 class="anchored" data-anchor-id="gráfico-de-dispersión-e-histograma">Gráfico de dispersión e histograma</h2>
+<div id="fig-scatter" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="images/unal_scatterplot_histo.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-scatter-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;14: Dispersión entre soporte del viento y velocidad terrestre del ave
+</figcaption>
+</figure>
+</div>
+<p>Análisis:<br>
+La relación entre <code>ws_mtss</code> y <code>vg_mtss</code> parece débil, con una ligera tendencia positiva. Sin embargo, se observan algunos valores extremos en ambos ejes que podrían influir en el ajuste del modelo de regresión. Es importante revisar estos puntos para determinar si corresponden a errores de medición o si representan casos reales que deben ser incluidos en el análisis.</p>
+</section>
+<section id="matriz-de-correlación" class="level2">
+<h2 class="anchored" data-anchor-id="matriz-de-correlación">Matriz de correlación</h2>
+<pre class="text"><code>['vg_mtss_gcd', 'ws_mtss', 'wc_mtss', 'wswc_mtss', 'va_mtss', 'vw_mtss']
+[[ 1.          0.00729128 -0.02435161 -0.03392206  0.16622798 -0.03452719]
+ [ 0.00729128  1.          0.00582686  0.04200695 -0.09535895 -0.02420315]
+ [-0.02435161  0.00582686  1.         -0.06854326  0.01932542  0.01517056]
+ [-0.03392206  0.04200695 -0.06854326  1.         -0.00999644 -0.02274568]
+ [ 0.16622798 -0.09535895  0.01932542 -0.00999644  1.          0.94459654]
+ [-0.03452719 -0.02420315  0.01517056 -0.02274568  0.94459654  1.        ]]</code></pre>
+<p>Análisis:</p>
+<p>Las variables <code>va_mtss</code> y <code>vw_mtss</code> muestran una correlación positiva moderada con <code>vg_mtss</code>, lo que es consistente con la teoría de que la velocidad en el aire y la velocidad del viento pueden influir en la velocidad terrestre del ave. El soporte del viento (<code>ws_mtss</code>) tiene una correlación muy baja, lo que podría indicar que su efecto no es tan directo o que existen otros factores en juego.</p>
+</section>
+<section id="estadísticas-descriptivas" class="level2">
+<h2 class="anchored" data-anchor-id="estadísticas-descriptivas">Estadísticas descriptivas</h2>
+<div id="a7f572f4" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>ruta_csv <span class="op">=</span> <span class="vs">r"C:/PIG/unal/unal_summary_stat.csv.xml"</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>df_stats <span class="op">=</span> pd.read_csv(ruta_csv)</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>df_stats</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Análisis:<br>
+Compare media, mediana, desviación estándar y varianza de las variables de velocidad. Indique si alguna variable tiene dispersión alta.</p>
+</section>
+<section id="regresión-lineal" class="level2">
+<h2 class="anchored" data-anchor-id="regresión-lineal">Regresión lineal</h2>
+<p>Pegue aquí los resultados principales del archivo <code>spring_reg_result.pdf</code> o de las tablas <code>spring_reg_coeff</code> y <code>spring_reg_diag_op</code>.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th style="text-align: right;">Coeficiente</th>
+<th style="text-align: right;">Error estándar</th>
+<th style="text-align: right;">p-valor</th>
+<th>Interpretación</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Intercept</td>
+<td style="text-align: right;">0.721804</td>
+<td style="text-align: right;">0.058396</td>
+<td style="text-align: right;">12.360582</td>
+<td>0.000000*</td>
+</tr>
+<tr class="even">
+<td>WS_MTSS</td>
+<td style="text-align: right;">0.001337</td>
+<td style="text-align: right;">0.003538</td>
+<td style="text-align: right;">0.377875</td>
+<td>0.705584</td>
+</tr>
+<tr class="odd">
+<td>WC_MTSS</td>
+<td style="text-align: right;">-0.003863</td>
+<td style="text-align: right;">0.003415</td>
+<td style="text-align: right;">-1.131234</td>
+<td>0.258105</td>
+</tr>
+<tr class="even">
+<td>WSWC_MTSS</td>
+<td style="text-align: right;">-0.000314</td>
+<td style="text-align: right;">0.000207</td>
+<td style="text-align: right;">-1.519609</td>
+<td>0.128802</td>
+</tr>
+</tbody>
+</table>
+<p>Análisis:</p>
+<p>Las variables relevantes son <code>ws_mtss</code>, <code>wc_mtss</code> y <code>wswc_mtss</code>. Ninguna de ellas muestra un efecto estadísticamente significativo sobre <code>vg_mtss</code>, lo que sugiere que el modelo no logra explicar la variabilidad en la velocidad terrestre del ave con estas variables. Es posible que existan otros factores no incluidos en el modelo que influyen en <code>vg_mtss</code>, o que la relación entre estas variables sea más compleja y no lineal.</p>
+</section>
+</section>
+<section id="fase-7.-análisis-cartográfico" class="level1">
+<h1>Fase 7. Análisis cartográfico</h1>
+<section id="mapa-final-exportado" class="level2">
+<h2 class="anchored" data-anchor-id="mapa-final-exportado">Mapa final exportado</h2>
+<div id="fig-map-final" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-map-final-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="/home/rstudio/work/24_arcpy/images/unal_map.png" class="img-fluid figure-img" style="width:90.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-map-final-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;15: Mapa final del escenario
+</figcaption>
+</figure>
+</div>
+<p>Análisis:<br>
+Describa la distribución espacial de los puntos o segmentos resultantes. Indique si los residuales de la regresión muestran agrupamientos espaciales, valores atípicos o zonas donde el modelo ajusta peor.</p>
+<p>Análisis:<br>
+Explique si las capas se cargaron correctamente y si la simbología aplicada ayuda a interpretar los resultados.</p>
+</section>
+</section>
+<section id="fase-8.-discusión" class="level1">
+<h1>Fase 8. Discusión</h1>
+<p>Redacte aquí la discusión general de la práctica.</p>
+<p>Aspectos mínimos a incluir:</p>
+<ol type="1">
+<li><p>Qué permitió hacer <code>ArcPy</code> dentro del flujo de trabajo. arcpy permitió automatizar la selección de datos, la segmentación dinámica, la generación de salidas vectoriales, el cálculo estadístico, la producción de gráficas y la exportación cartográfica. Actuó como un puente entre la base de datos geográfica, la interfaz de ArcGIS Pro y los módulos de análisis estadístico, facilitando un flujo completo y eficiente para responder a la pregunta orientadora sobre la influencia del viento en el movimiento de las aves migratorias.</p></li>
+<li><p>Qué parte del procesamiento fue espacial y qué parte fue estadística. El procesamiento espacial incluyó la creación de capas temporales, la aplicación de filtros por ave, tiempo y atributos, y la generación de capas de eventos lineales y puntuales. La parte estadística se centró en el análisis de regresión, la correlación y las estadísticas descriptivas para interpretar la relación entre las variables de viento y la velocidad terrestre de las aves.<br>
+</p></li>
+<li><p>Qué papel cumplieron los filtros secuenciales. Los filtros secuenciales permitieron organizar el análisis de manera estructurada, comenzando por la selección de aves específicas, luego aplicando restricciones temporales o de distancia, y finalmente filtrando por atributos relacionados con el viento. Esta secuencia facilitó la generación de resultados más precisos y relevantes para responder a la pregunta orientadora, al enfocarse en subconjuntos específicos de datos que cumplen con criterios definidos.</p></li>
+<li><p>Qué limitaciones se observaron en los datos o en la ejecución. Una limitación importante fue que los datos de fecha estaban almacenados como cadenas de texto en lugar de un formato de fecha, lo que complicó la aplicación de filtros temporales y requirió el uso de funciones específicas en las consultas SQL. Además, la falta de significancia estadística en el modelo de regresión sugiere que podrían existir otros factores no considerados que influyen en la velocidad terrestre de las aves, lo que limita la capacidad del análisis para explicar completamente el fenómeno estudiado.</p></li>
+<li><p>Qué utilidad tiene automatizar el mapa y los reportes. Automatizar el mapa y los reportes permite generar resultados consistentes y reproducibles de manera eficiente, especialmente cuando se trabaja con grandes volúmenes de datos o múltiples escenarios. Esto facilita la interpretación de los resultados, la comunicación de hallazgos a través de visualizaciones claras y la capacidad de actualizar los análisis rápidamente si se modifican los datos o los criterios de filtrado.</p></li>
+</ol>
+</section>
+<section id="conclusiones" class="level1">
+<h1>Conclusiones</h1>
+<p>El flujo desarrollado permitió reconocer cómo <code>ArcPy</code> actúa como un puente entre la base de datos geográfica, la interfaz de ArcGIS Pro y los módulos de análisis estadístico. La herramienta no calcula desde cero las variables cinemáticas principales, ya que estas se encuentran precalculadas en la geodatabase, sino que organiza el análisis mediante filtros secuenciales y genera productos derivados. Este comportamiento muestra que el valor del script está en la automatización del flujo completo: selección de datos, segmentación dinámica, generación de salidas vectoriales, cálculo estadístico, producción de gráficas y exportación cartográfica.</p>
+</section>
+<section id="recomendaciones" class="level1">
+<h1>Recomendaciones</h1>
+<ul>
+<li>Mantener rutas relativas cuando sea posible para evitar errores al mover el proyecto.</li>
+<li>Verificar que el orden de parámetros del Toolbox coincida con los índices usados en <code>arcpy.GetParameterAsText()</code>.</li>
+<li>Revisar la existencia de campos antes de ejecutar filtros o modelos estadísticos.</li>
+<li>Guardar capturas de cada fase de ejecución para soportar el análisis.</li>
+<li>No eliminar las salidas intermedias hasta terminar la revisión, porque facilitan la trazabilidad del proceso.</li>
+</ul>
+</section>
+<section id="anexos" class="level1">
+<h1>Anexos</h1>
+<p>En la carpeta /resultados quedan cargados los archivos resultantes de ejecutar goose_tool.py con la configuración del escenario <code>unal</code>. Estos archivos incluyen gráficos, tablas y mapas que soportan el análisis estadístico y cartográfico realizado en esta práctica.</p>
+</section>
+<section id="referencias" class="level1">
+<h1>Referencias</h1>
+<p>Dodge, S., et al.&nbsp;(2013). Referencia del modelo teórico de movimiento de aves y viento. Complete aquí la referencia bibliográfica según el formato solicitado por la clase.</p>
+<p>ArcGIS Pro Documentation. ArcPy site package. Complete aquí la referencia oficial si la usa en el informe.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
